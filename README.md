@@ -1,70 +1,103 @@
-# 💬 Zenith Chat — Stellar Freighter Wallet Messenger
+💬 Zenith Chat — Stellar Freighter Wallet + Soroban Smart Contract Messenger
 
-Zenith Chat is a decentralized chat application built on **React + Express**, using the **Stellar Freighter Wallet** for secure authentication and identity.  
-Users can connect their wallet, access chatrooms, and exchange messages — all tied to their **Stellar Testnet public key**.
+Zenith Chat is a decentralized chat DApp built on React + Express + Soroban, using the Stellar Freighter Wallet for authentication and identity.
+Users connect their wallet, access chatrooms, and exchange messages — all linked to their Stellar Testnet public keys.
+Message data can optionally be stored and verified on-chain via a Soroban smart contract.
 
----
+🚀 Features
 
-## 🚀 Features
+🔗 Freighter Wallet Integration
 
-- 🔗 **Freighter Wallet Integration**
-  - Connect securely using your Freighter wallet (Testnet)
-  - Auto-verifies network and public key access
+Connect securely using your Freighter wallet (Testnet)
 
-- 💬 **Chatrooms**
-  - Message friends using their Stellar addresses
-  - Messages are organized per friend (like WhatsApp)
+Auto-verifies network and public key access
 
-- 🧠 **Local + Backend Storage**
-  - Messages stored temporarily in the backend
-  - Chat state handled client-side in React
+💬 Cross-Wallet Chatrooms
 
-- 🌐 **Fullstack App**
-  - **Frontend:** React + Vite (or CRA)
-  - **Backend:** Node.js + Express
-  - **API communication:** Axios
-  - **Blockchain Auth:** Stellar Freighter
+Chat using Stellar public keys (Testnet)
 
----
+Each conversation is wallet-address based
 
-## 🧩 Tech Stack
+⚡ Real-Time Messaging (Socket.io)
 
-| Layer | Technology |
-|-------|-------------|
-| Frontend | React, JavaScript, Axios |
-| Backend | Node.js, Express |
-| Wallet | Stellar Freighter API |
-| Styling | Custom CSS / Tailwind (optional) |
+Instant updates between connected wallets
 
----
+Message broadcast handled by backend WebSocket
 
-## 📁 Project Structure
-zenith-contract/
-├── zenith_web/ # React Frontend
-│ ├── src/
-│ │ ├── components/
-│ │ │ ├── ConnectWallet.js
-│ │ │ ├── FriendList.js
-│ │ │ ├── MessageBoard.js
-│ │ │ └── SendMessage.js
-│ │ ├── App.js
-│ │ └── styles.css
-│ ├── package.json
-│ └── build/ # Generated after build
-└── backend/ # Express Backend
-├── server.js
-├── package.json
-└── routes/
+🔐 Soroban Smart Contract Integration
 
+Messages can be registered or validated on-chain
 
----
+Uses deployed contract on Stellar Testnet for decentralized record
 
-## ⚙️ Installation & Setup
+🌐 Fullstack DApp
 
-### 1️⃣ Clone the Repository
-```bash
-git clone https://github.com/your-username/zenith-chat.git
-cd contract
+Frontend: React (Vite)
+
+Backend: Node.js (Express + Socket.io)
+
+Blockchain Layer: Soroban + Stellar Testnet
+
+Wallet: Stellar Freighter
+
+🧩 Tech Stack
+Layer	Technology
+Frontend	React, Axios, Socket.io-client
+Backend	Node.js, Express, Socket.io
+Smart Contract	Soroban (Rust)
+Wallet	Stellar Freighter
+Blockchain	Stellar Testnet
+Styling	Custom CSS / Tailwind
+
+📄 Smart Contract Details
+Contract Name: contract
+Language: Rust (Soroban)
+Network: Stellar Testnet
+Contract ID: CAJPPJHRVND42MAMFYKNX7HVML7OTLWE7KVKHAFNOGZVF4S7GOYNO3XE
+
+Key Functions:
+
+Function	Description
+store_message(sender, receiver, message)	Saves encrypted or plain message data on-chain
+get_messages(address)	Retrieves messages for a specific wallet address
+
+Example Invocation:
+
+soroban invoke \
+  --id CAJPPJHRVND42MAMFYKNX7HVML7OTLWE7KVKHAFNOGZVF4S7GOYNO3XE \
+  --fn store_message \
+  --arg sender:GDRXRA4SBGJS7MUL22DK3ZGL34FKEDE6KV2NEAPMEEN7XW2R5JEG4CJS \
+  --arg receiver:GBZJXU4WBMBQOGP6KFN7J43OAFIYXL2C2H2VSCAXUB54JQ5G2A5GBQJN \
+  --arg message:"Hey there from Zenith!"
+
+📁 Project Structure
+zenith-dapp/
+├── zenith_web/              # React Frontend
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── ConnectWallet.js
+│   │   │   ├── FriendList.js
+│   │   │   ├── MessageBoard.js
+│   │   │   └── SendMessage.js
+│   │   ├── App.js
+│   │   └── styles.css
+│   ├── package.json
+│   └── build/               # Production build output
+│
+├── backend/                 # Express Backend + Socket.io
+│   ├── server.js
+│   ├── package.json
+│   └── routes/
+│
+└── contract/             # Soroban Smart Contract (Rust)
+    ├── Cargo.toml
+    ├── src/lib.rs
+    └── target/
+
+⚙️ Installation & Setup
+1️⃣ Clone the Repository
+git clone https://github.com/tejasvi-sinha23/Zenith-chat-DApp.git
+cd zenith-contract
 
 2️⃣ Install Frontend Dependencies
 cd zenith_web
@@ -75,40 +108,38 @@ cd ../backend
 npm install
 
 💻 Running Locally
-🖥️ Run Backend
+🖥️ Start Backend
 cd backend
 node server.js
 
 
-Backend runs on http://localhost:5000
+Backend runs at 👉 http://localhost:4000
 
-🌐 Run Frontend
+🌐 Start Frontend
 cd ../zenith_web
 npm start
 
 
-Frontend runs on http://localhost:3000
+Frontend runs at 👉 http://localhost:3000
 
-🔑 Connecting Freighter Wallet
+🔑 Connect Freighter Wallet
 
 Install the Freighter Wallet Extension
 
 Open Freighter → Settings → Switch Network to TESTNET
 
-Open the Zenith Chat app → Click “Connect Freighter Wallet”
+Open the Zenith Chat app → Click "Connect Freighter Wallet"
 
-You’ll see your connected public key
+You’ll see your connected public key appear
 
-Start chatting 🎉
+Start chatting securely with other Stellar users 🎉
 
 📡 API Endpoints
-GET /api/messages/:address
+Method	Endpoint	Description
+GET	/api/messages/:address	Fetches all messages for a given address
+POST	/api/send	Sends a message to a recipient
 
-Returns all messages for a wallet address.
-
-POST /api/send
-
-Sends a new message.
+Example:
 
 {
   "sender": "GDRXRA4SBGJS7MUL22DK3ZGL34FKEDE6KV2NEAPMEEN7XW2R5JEG4CJS",
@@ -118,18 +149,31 @@ Sends a new message.
 
 🧱 Building for Production
 
-To create an optimized build:
+To create an optimized frontend build:
 
 cd zenith_web
 npm run build
 
 
-Then serve it from Express:
+Then serve it with the backend:
 
 cd ../backend
 node server.js
 
 
-Now the app will be available at:
-👉 http://localhost:5000
+Now your app will be available at 👉
+http://localhost:4000
 
+🧠 Future Improvements
+
+Integrate message encryption before storing on-chain
+
+Enable permanent decentralized message history using IPFS
+
+Add friend discovery via Stellar memo hashes
+
+👨‍💻 Author: Tejasvi Sinha
+
+🌐 Network: Stellar Testnet
+📜 Contract ID: CAJPPJHRVND42MAMFYKNX7HVML7OTLWE7KVKHAFNOGZVF4S7GOYNO3XE
+💬 Project: Zenith Chat DApp
