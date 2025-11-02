@@ -1,49 +1,70 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import io from "socket.io-client";
 import ConnectWallet from "./components/ConnectWallet";
 import FriendList from "./components/FriendList";
 import MessageBoard from "./components/MessageBoard";
 import SendMessage from "./components/SendMessage";
 import "./styles.css";
 
+const socket = io("http://localhost:4000");
+
 function App() {
   const [address, setAddress] = useState(null);
-  const [friends, setFriends] = useState([]); // e.g., [{ name: "Alice", address: "GABC..." }]
+  const [friends, setFriends] = useState([]);
   const [selectedFriend, setSelectedFriend] = useState(null);
-  const [messages, setMessages] = useState({}); // { friendAddress: [ { sender, text, time } ] }
+  const [messages, setMessages] = useState({});
 
-  const handleSend = (text) => {
-    if (!selectedFriend) {
-      alert("Select a friend to chat with!");
-      return;
+  // ✅ Connect wallet to socket room
+  useEffect(() => {
+    if (address) {
+      socket.emit("joinRoom", address);
+      console.log("🟢 Joined socket room:", address);
     }
+  }, [address]);
 
+  // ✅ Listen for messages
+  useEffect(() => {
+  socket.on("receiveMessage", (data) => {
+  console.log("📩 New message received:", data);
+  const { sender, recipient, text, time } = data;
+
+  // Determine which address this chat belongs to
+  const chatKey = sender === address ? recipient : sender;
+
+  setMessages((prev) => ({
+    ...prev,
+    [chatKey]: [...(prev[chatKey] || []), { sender, text, time }]
+  }));
+});
+
+
+    return () => socket.off("receiveMessage");
+  }, [address]);
+
+  // ✅ Send message through socket
+  const handleSend = (text) => {
+    if (!selectedFriend) return alert("Select a friend first!");
     if (!text.trim()) return;
 
-    const newMessage = {
+    const messageData = {
       sender: address,
+      recipient: selectedFriend.address,
       text,
-      time: new Date().toLocaleTimeString(),
+      time: new Date().toLocaleTimeString()
     };
 
-    setMessages((prev) => ({
-      ...prev,
-      [selectedFriend.address]: [
-        ...(prev[selectedFriend.address] || []),
-        newMessage,
-      ],
-    }));
+    console.log("📤 Sending message:", messageData);
+    socket.emit("sendMessage", messageData);
   };
 
   return (
     <div className="app">
       <h1>💬 Zenith Chat</h1>
 
-      {/* Connect Wallet Section */}
       <ConnectWallet onConnect={setAddress} />
 
       {address && (
         <div className="chat-layout">
-          {/* Friend List Section */}
           <FriendList
             friends={friends}
             setFriends={setFriends}
@@ -52,7 +73,6 @@ function App() {
             messages={messages}
           />
 
-          {/* Chat Window Section */}
           <div className="chat-window">
             {selectedFriend ? (
               <>
@@ -64,9 +84,7 @@ function App() {
                 <SendMessage onSend={handleSend} />
               </>
             ) : (
-              <div className="no-chat">
-                👈 Select a friend to start chatting
-              </div>
+              <div className="no-chat">👈 Select a friend to start chatting</div>
             )}
           </div>
         </div>

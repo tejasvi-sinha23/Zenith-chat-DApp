@@ -1,24 +1,33 @@
 const express = require("express");
+const http = require("http");
+const { Server } = require("socket.io");
 const cors = require("cors");
-const { exec } = require("child_process");
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: { origin: "*" }
+});
 
-app.get("/getPublicKey/:account", (req, res) => {
-  const account = req.params.account;
+io.on("connection", (socket) => {
+  console.log("⚡ User connected:", socket.id);
 
-  exec(`stellar keys address ${account}`, (error, stdout, stderr) => {
-    if (error) {
-      console.error("Error executing stellar command:", stderr);
-      return res.status(500).json({ error: stderr.trim() });
-    }
+  socket.on("joinRoom", (wallet) => {
+    socket.join(wallet);
+    console.log(`🏠 ${wallet} joined their room`);
+  });
 
-    const pubKey = stdout.trim();
-    res.json({ publicKey: pubKey });
+  socket.on("sendMessage", (data) => {
+    const { sender, recipient, text } = data;
+    console.log("📤", sender, "→", recipient, ":", text);
+    io.to(recipient).emit("receiveMessage", data);
+    io.to(sender).emit("receiveMessage", data);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("❌ User disconnected:", socket.id);
   });
 });
 
-const PORT = 4000;
-app.listen(PORT, () => console.log(`🚀 Backend running on port ${PORT}`));
+server.listen(4000, () => console.log("🚀 Socket backend running on port 4000"));
