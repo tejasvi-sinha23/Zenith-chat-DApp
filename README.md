@@ -65,7 +65,8 @@ soroban invoke \
   --arg message:"Hey there from Zenith!"
 
 📁 Project Structure
-zenith-dapp/
+
+```zenith-dapp/
 ├── zenith_web/              # React Frontend
 │   ├── src/
 │   │   ├── components/
@@ -86,7 +87,8 @@ zenith-dapp/
 └── contract/                # Soroban Smart Contract (Rust)
     ├── Cargo.toml
     ├── src/lib.rs
-    └── target/
+    └── target/ 
+    ```
 
 ⚙️ Installation & Setup
 1️⃣ Clone the Repository
