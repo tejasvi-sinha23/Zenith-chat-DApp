@@ -1,0 +1,10 @@
+[package]
+name = "zenith_chat"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+soroban-sdk = { version = "23.1.0", default-features = false }
