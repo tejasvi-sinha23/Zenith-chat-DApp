@@ -1,60 +1,68 @@
 import React, { useState, useEffect } from "react";
-import io from "socket.io-client";
+import { io } from "socket.io-client";
 import ConnectWallet from "./components/ConnectWallet";
 import FriendList from "./components/FriendList";
 import MessageBoard from "./components/MessageBoard";
 import SendMessage from "./components/SendMessage";
 import "./styles.css";
 
-const socket = io("http://localhost:4000");
+const socket = io("http://localhost:4000", {
+  transports: ["websocket"],
+  reconnection: true,
+});
 
 function App() {
   const [address, setAddress] = useState(null);
   const [friends, setFriends] = useState([]);
   const [selectedFriend, setSelectedFriend] = useState(null);
-  const [messages, setMessages] = useState({});
+  const [messages, setMessages] = useState({}); // { friendAddress: [ { sender, text, time } ] }
 
-  // ✅ Connect wallet to socket room
+  // Join socket room after wallet connects
   useEffect(() => {
-    if (address) {
-      socket.emit("joinRoom", address);
-      console.log("🟢 Joined socket room:", address);
-    }
+    if (!address) return;
+
+    socket.emit("joinRoom", address);
+    console.log("🟢 Joined socket room:", address);
+
+    // Listen for incoming messages
+    socket.on("receiveMessage", (data) => {
+      console.log("📩 New message received:", data);
+
+      setMessages((prev) => ({
+        ...prev,
+        [data.sender]: [...(prev[data.sender] || []), data],
+      }));
+    });
+
+    return () => {
+      socket.off("receiveMessage");
+    };
   }, [address]);
 
-  // ✅ Listen for messages
-  useEffect(() => {
-  socket.on("receiveMessage", (data) => {
-  console.log("📩 New message received:", data);
-  const { sender, recipient, text, time } = data;
-
-  // Determine which address this chat belongs to
-  const chatKey = sender === address ? recipient : sender;
-
-  setMessages((prev) => ({
-    ...prev,
-    [chatKey]: [...(prev[chatKey] || []), { sender, text, time }]
-  }));
-});
-
-
-    return () => socket.off("receiveMessage");
-  }, [address]);
-
-  // ✅ Send message through socket
+  // Send message to another wallet
   const handleSend = (text) => {
-    if (!selectedFriend) return alert("Select a friend first!");
+    if (!selectedFriend) return alert("Select a friend to chat with!");
     if (!text.trim()) return;
 
-    const messageData = {
+    const newMessage = {
       sender: address,
       recipient: selectedFriend.address,
       text,
-      time: new Date().toLocaleTimeString()
+      time: new Date().toLocaleTimeString(),
     };
 
-    console.log("📤 Sending message:", messageData);
-    socket.emit("sendMessage", messageData);
+    // Emit through socket
+    socket.emit("sendMessage", newMessage);
+    console.log("📤 Sending message:", newMessage);
+
+    // Update local chat immediately
+    setMessages((prev) => ({
+      ...prev,
+      [selectedFriend.address]: [
+        ...(prev[selectedFriend.address] || []),
+        newMessage,
+      ],
+    }));
   };
 
   return (

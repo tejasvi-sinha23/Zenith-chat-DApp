@@ -1,11 +1,24 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 
-const MessageBoard = ({ messages, friend, myAddress }) => {
+const MessageBoard = ({ messages = [], friend, myAddress }) => {
+  const messagesEndRef = useRef(null);
+
+  // Auto scroll to bottom when messages change
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
+
   return (
     <div className="message-board">
       <div className="chat-header">
-        <h2>{friend.name}</h2>
-        <small>{friend.address.slice(0, 8)}...</small>
+        <h2>{friend?.name || "Unknown"}</h2>
+        <small>
+          {friend?.address
+            ? friend.address.slice(0, 6) + "..." + friend.address.slice(-4)
+            : ""}
+        </small>
       </div>
 
       <div className="chat-messages">
@@ -14,7 +27,7 @@ const MessageBoard = ({ messages, friend, myAddress }) => {
         ) : (
           messages.map((m, i) => (
             <div
-              key={i}
+              key={`${m.sender}-${i}`}
               className={`message-bubble ${
                 m.sender === myAddress ? "sent" : "received"
               }`}
@@ -24,6 +37,7 @@ const MessageBoard = ({ messages, friend, myAddress }) => {
             </div>
           ))
         )}
+        <div ref={messagesEndRef} />
       </div>
     </div>
   );

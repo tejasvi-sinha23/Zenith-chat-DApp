@@ -64,7 +64,7 @@ zenith-contract/
 ### 1️⃣ Clone the Repository
 ```bash
 git clone https://github.com/your-username/zenith-chat.git
-cd zenith-chat
+cd contract
 
 2️⃣ Install Frontend Dependencies
 cd zenith_web
