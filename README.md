@@ -1,7 +1,3 @@
-Perfect — here’s a **visually enhanced, polished, and professional** version of your README with proper markdown hierarchy, icons, syntax highlighting, and consistent formatting.
-It’s styled for **GitHub presentation** — clean, readable, and impressive for a portfolio or open-source project 👇
-
----
 
 # 💬 **Zenith Chat — Stellar Freighter Wallet + Soroban Smart Contract Messenger**
 
