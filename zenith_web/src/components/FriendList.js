@@ -6,6 +6,8 @@ const FriendList = ({ friends, setFriends, onSelectFriend, selectedFriend, messa
 
   const addFriend = () => {
     if (!name || !address) return;
+    // prevent duplicates
+    if (friends.some(f => f.address === address)) return alert("Friend already added!");
     setFriends([...friends, { name, address }]);
     setName("");
     setAddress("");
@@ -15,8 +17,9 @@ const FriendList = ({ friends, setFriends, onSelectFriend, selectedFriend, messa
     <div className="friend-list">
       <h3>Chats</h3>
       <div className="friends">
+        {friends.length === 0 && <p className="no-friends">No friends added yet</p>}
         {friends.map((f, i) => {
-          const unread = (messages[f.address]?.length || 0);
+          const msgCount = (messages[f.address]?.length || 0);
           return (
             <div
               key={i}
@@ -28,7 +31,7 @@ const FriendList = ({ friends, setFriends, onSelectFriend, selectedFriend, messa
                 <strong>{f.name}</strong>
                 <p>{f.address.slice(0, 6)}…</p>
               </div>
-              {unread > 0 && <span className="unread">{unread}</span>}
+              {msgCount > 0 && <span className="unread">{msgCount}</span>}
             </div>
           );
         })}
@@ -41,7 +44,7 @@ const FriendList = ({ friends, setFriends, onSelectFriend, selectedFriend, messa
           onChange={(e) => setName(e.target.value)}
         />
         <input
-          placeholder="Public Key"
+          placeholder="Wallet Address"
           value={address}
           onChange={(e) => setAddress(e.target.value)}
         />

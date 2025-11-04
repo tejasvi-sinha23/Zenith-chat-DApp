@@ -6,6 +6,7 @@ import MessageBoard from "./components/MessageBoard";
 import SendMessage from "./components/SendMessage";
 import "./styles.css";
 
+// Connect to backend WebSocket
 const socket = io("http://localhost:4000", {
   transports: ["websocket"],
   reconnection: true,
@@ -17,21 +18,41 @@ function App() {
   const [selectedFriend, setSelectedFriend] = useState(null);
   const [messages, setMessages] = useState({}); // { friendAddress: [ { sender, text, time } ] }
 
-  // Join socket room after wallet connects
+  // When wallet connects → join room & load history
   useEffect(() => {
     if (!address) return;
 
     socket.emit("joinRoom", address);
     console.log("🟢 Joined socket room:", address);
 
-    // Listen for incoming messages
+    // 🔹 Fetch chat history from backend
+    fetch(`http://localhost:4000/api/messages/${address}`)
+      .then((res) => res.json())
+      .then((data) => {
+        const organized = {};
+        data.forEach((msg) => {
+          const other =
+            msg.sender === address ? msg.recipient : msg.sender;
+          if (!organized[other]) organized[other] = [];
+          organized[other].push(msg);
+        });
+        setMessages(organized);
+        console.log("🗂️ Loaded chat history:", organized);
+      })
+      .catch((err) => console.error("❌ History fetch failed:", err));
+
+    // 🔹 Listen for real-time incoming messages
     socket.on("receiveMessage", (data) => {
       console.log("📩 New message received:", data);
 
-      setMessages((prev) => ({
-        ...prev,
-        [data.sender]: [...(prev[data.sender] || []), data],
-      }));
+      setMessages((prev) => {
+        const otherWallet =
+          data.sender === address ? data.recipient : data.sender;
+        return {
+          ...prev,
+          [otherWallet]: [...(prev[otherWallet] || []), data],
+        };
+      });
     });
 
     return () => {
@@ -39,7 +60,7 @@ function App() {
     };
   }, [address]);
 
-  // Send message to another wallet
+  // 🔹 Send message handler
   const handleSend = (text) => {
     if (!selectedFriend) return alert("Select a friend to chat with!");
     if (!text.trim()) return;
@@ -48,14 +69,14 @@ function App() {
       sender: address,
       recipient: selectedFriend.address,
       text,
-      time: new Date().toLocaleTimeString(),
+      time: new Date().toISOString(),
     };
 
-    // Emit through socket
+    // Emit via WebSocket
     socket.emit("sendMessage", newMessage);
     console.log("📤 Sending message:", newMessage);
 
-    // Update local chat immediately
+    // Store locally and optimistically render
     setMessages((prev) => ({
       ...prev,
       [selectedFriend.address]: [
@@ -63,6 +84,13 @@ function App() {
         newMessage,
       ],
     }));
+
+    // 🔹 Save message to backend (PostgreSQL)
+    fetch("http://localhost:4000/api/send", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newMessage),
+    }).catch((err) => console.error("❌ Failed to store message:", err));
   };
 
   return (

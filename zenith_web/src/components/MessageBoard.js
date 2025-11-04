@@ -1,43 +1,39 @@
 import React, { useEffect, useRef } from "react";
 
-const MessageBoard = ({ messages = [], friend, myAddress }) => {
-  const messagesEndRef = useRef(null);
 
-  // Auto scroll to bottom when messages change
+const MessageBoard = ({ friend, myAddress, messages }) => {
+  const bottomRef = useRef(null);
+
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-    }
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   return (
     <div className="message-board">
       <div className="chat-header">
-        <h2>{friend?.name || "Unknown"}</h2>
-        <small>
-          {friend?.address
-            ? friend.address.slice(0, 6) + "..." + friend.address.slice(-4)
-            : ""}
-        </small>
+        <h3>{friend.name}</h3>
+        <p>{friend.address.slice(0, 8)}…</p>
       </div>
 
-      <div className="chat-messages">
-        {messages.length === 0 ? (
-          <p className="no-msg">No messages yet.</p>
-        ) : (
-          messages.map((m, i) => (
+      <div className="messages-container">
+        {messages.map((msg, i) => {
+          const isMine = msg.sender === myAddress;
+          return (
             <div
-              key={`${m.sender}-${i}`}
-              className={`message-bubble ${
-                m.sender === myAddress ? "sent" : "received"
-              }`}
+              key={i}
+              className={`message-bubble ${isMine ? "sent" : "received"}`}
             >
-              <p>{m.text}</p>
-              <span className="time">{m.time}</span>
+              <div className="message-text">{msg.text}</div>
+              <div className="message-time">
+                {new Date(msg.time).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </div>
             </div>
-          ))
-        )}
-        <div ref={messagesEndRef} />
+          );
+        })}
+        <div ref={bottomRef} />
       </div>
     </div>
   );
