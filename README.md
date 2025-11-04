@@ -112,7 +112,7 @@ Users connect their wallets, chat wallet-to-wallet in real time, and messages ca
 
 ---
 ### **DEMO VIDEO**
-[▶️ Watch Demo](zenith_web/Media1.mp4)
+[▶️ Watch Demo](https://drive.google.com/file/d/1gHlPKlixm6Rxvf-w_MN3BbV2q5TUxNI5/view?usp=sharing)
 
 ## 📄 **Smart Contract Details**
 
