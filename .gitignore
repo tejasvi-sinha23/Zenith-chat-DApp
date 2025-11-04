@@ -5,4 +5,4 @@ target
 .soroban
 .stellar
 
-.env
+backend/.env
