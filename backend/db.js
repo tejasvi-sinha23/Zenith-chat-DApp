@@ -16,3 +16,5 @@ pool
   .catch((err) => console.error("❌ PostgreSQL connection error:", err));
 
 module.exports = pool;
+
+//db setup done
