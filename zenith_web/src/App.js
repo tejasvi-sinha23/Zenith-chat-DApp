@@ -6,7 +6,7 @@ import MessageBoard from "./components/MessageBoard";
 import SendMessage from "./components/SendMessage";
 import "./styles.css";
 
-// Connect to backend WebSocket
+// ✅ Connect to backend WebSocket
 const socket = io("http://localhost:4000", {
   transports: ["websocket"],
   reconnection: true,
@@ -18,14 +18,14 @@ function App() {
   const [selectedFriend, setSelectedFriend] = useState(null);
   const [messages, setMessages] = useState({}); // { friendAddress: [ { sender, text, time } ] }
 
-  // When wallet connects → join room & load history
+  // ✅ Join socket + fetch chat history when wallet connects
   useEffect(() => {
     if (!address) return;
 
     socket.emit("joinRoom", address);
     console.log("🟢 Joined socket room:", address);
 
-    // 🔹 Fetch chat history from backend
+    // Fetch all messages involving this address
     fetch(`http://localhost:4000/api/messages/${address}`)
       .then((res) => res.json())
       .then((data) => {
@@ -41,26 +41,36 @@ function App() {
       })
       .catch((err) => console.error("❌ History fetch failed:", err));
 
-    // 🔹 Listen for real-time incoming messages
+    // ✅ Listen for real-time messages
     socket.on("receiveMessage", (data) => {
-      console.log("📩 New message received:", data);
+      console.log("📩 Incoming message:", data);
 
       setMessages((prev) => {
         const otherWallet =
           data.sender === address ? data.recipient : data.sender;
+        const existingMessages = prev[otherWallet] || [];
+
+        // prevent duplicates (based on timestamp + sender + text)
+        const isDuplicate = existingMessages.some(
+          (m) =>
+            m.time === data.time &&
+            m.text === data.text &&
+            m.sender === data.sender
+        );
+
+        if (isDuplicate) return prev; // ignore duplicate
+
         return {
           ...prev,
-          [otherWallet]: [...(prev[otherWallet] || []), data],
+          [otherWallet]: [...existingMessages, data],
         };
       });
     });
 
-    return () => {
-      socket.off("receiveMessage");
-    };
+    return () => socket.off("receiveMessage");
   }, [address]);
 
-  // 🔹 Send message handler
+  // ✅ Send a message
   const handleSend = (text) => {
     if (!selectedFriend) return alert("Select a friend to chat with!");
     if (!text.trim()) return;
@@ -72,20 +82,12 @@ function App() {
       time: new Date().toISOString(),
     };
 
-    // Emit via WebSocket
-    socket.emit("sendMessage", newMessage);
     console.log("📤 Sending message:", newMessage);
 
-    // Store locally and optimistically render
-    setMessages((prev) => ({
-      ...prev,
-      [selectedFriend.address]: [
-        ...(prev[selectedFriend.address] || []),
-        newMessage,
-      ],
-    }));
+    // Only emit — don’t append locally (to avoid duplicate)
+    socket.emit("sendMessage", newMessage);
 
-    // 🔹 Save message to backend (PostgreSQL)
+    // Store to DB
     fetch("http://localhost:4000/api/send", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -96,13 +98,9 @@ function App() {
   return (
     <div className="app">
       <h1>💬 Zenith Chat</h1>
-      
 
       <ConnectWallet onConnect={setAddress} />
-
-      <h2>Now chat with friends on Zenith!</h2>
-      
-
+      <h2>Now Chat with friends on Zenith!</h2>
       {address && (
         <div className="chat-layout">
           <FriendList
