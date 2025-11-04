@@ -26,3 +26,7 @@ yarn-error.log*
 .env
 backend/.env
 zenith_web/.env
+
+# Ignore environment files
+.env
+*.env

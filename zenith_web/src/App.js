@@ -96,8 +96,12 @@ function App() {
   return (
     <div className="app">
       <h1>💬 Zenith Chat</h1>
+      
 
       <ConnectWallet onConnect={setAddress} />
+
+      <h2>Now chat with friends on Zenith!</h2>
+      
 
       {address && (
         <div className="chat-layout">
