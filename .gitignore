@@ -5,4 +5,7 @@ target
 .soroban
 .stellar
 
+# Environment files
+.env
 backend/.env
+zenith_web/.env
